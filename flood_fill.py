@@ -10,6 +10,7 @@ flood = thr.copy()/255.
 flood -=1
 plt.imshow(flood.copy()*-1,cmap='gray')
 plt.show()
+
 def flood_fill(img,j,i,label):
     q = queue.Queue()
     q.put((j,i))
