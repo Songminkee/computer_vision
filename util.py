@@ -1,9 +1,7 @@
 import numpy as np
 import cv2
-import matplotlib.pyplot as plt
-img = cv2.imread('./data/food.jpg',cv2.IMREAD_GRAYSCALE)
 
-
+## convolution
 def im2col(input_data, filter_h, filter_w):
     H, W, C = input_data.shape
 
@@ -47,6 +45,7 @@ def conv(img,filter):
     out = np.dot(col, col_filetr)
     return np.transpose(out.reshape((c, img_h, img_w)),(1, 2,0))
 
+## gaussian
 def gaussian2d(x,y,sigma):
     x2 = x**2
     y2 = y**2
@@ -61,11 +60,14 @@ def make_gaussian(sigma):
     XX, YY = np.meshgrid(aran, aran)
     return gaussian2d(XX, YY, sigma)
 
+def gaussian_blur(img,sigma):
+    gau_filter = make_gaussian(sigma)
+    gau = np.uint8(conv(img, gau_filter).squeeze())
+    return gau
 
-
-
+## sobel
 def direction_quantization(atan):
-    ret = np.where(np.logical_and(atan>=22.5,atan<67.5),7,4)
+    ret = np.where(np.logical_and(atan >= 22.5,atan < 67.5),7,4)
     ret = np.where(np.logical_and(atan >= 67.5, atan < 111.5), 6, ret)
     ret = np.where(np.logical_and(atan >= 111.5, atan < 157.5), 5, ret)
     return ret
@@ -90,18 +92,18 @@ def sobel(img):
     atan[atan > 180] = 360 - atan[atan > 180]
     atan[atan < 0] += 180
     direc = direction_quantization(atan)
-
     return Sobel, direc
 
+## canny
 def non_maximum_suppression(img,direction):
     e_img = np.pad(img[:, 1:], ((0, 0), (0, 1)),constant_values=255)
     w_img = np.pad(img[:, :-1], ((0, 0), (1, 0)),constant_values=255)
     n_img = np.pad(img[:-1, :], ((1, 0), (0, 0)),constant_values=255)
     s_img = np.pad(img[1:, :], ((0, 1), (0, 0)),constant_values=255)
-    se_img = np.pad(s_img[:, 1:], ((0, 0), (0, 1)),constant_values=255)
-    ne_img = np.pad(n_img[:, 1:], ((0, 0), (0, 1)),constant_values=255)
-    sw_img = np.pad(s_img[:, :-1], ((0, 0), (1, 0)),constant_values=255)
-    nw_img = np.pad(n_img[:, :-1], ((0, 0), (1, 0)),constant_values=255)
+    sw_img = np.pad(s_img[:, 1:], ((0, 0), (0, 1)),constant_values=255)
+    nw_img = np.pad(n_img[:, 1:], ((0, 0), (0, 1)),constant_values=255)
+    se_img = np.pad(s_img[:, :-1], ((0, 0), (1, 0)),constant_values=255)
+    ne_img = np.pad(n_img[:, :-1], ((0, 0), (1, 0)),constant_values=255)
 
     ret = np.where(direction == 4, np.logical_and(img >= n_img, img >= s_img), False)
     ret = np.where(direction == 5, np.logical_and(img >= ne_img, img >= sw_img), ret)
@@ -111,14 +113,14 @@ def non_maximum_suppression(img,direction):
 
 def neighbor(img):
     img = np.uint8(img)
-    e_img = np.pad(img[:, 1:], ((0, 0), (0, 1)))
-    w_img = np.pad(img[:, :-1], ((0, 0), (1, 0)))
+    w_img = np.pad(img[:, 1:], ((0, 0), (0, 1)))
+    e_img = np.pad(img[:, :-1], ((0, 0), (1, 0)))
     n_img = np.pad(img[:-1, :], ((1, 0), (0, 0)))
     s_img = np.pad(img[1:, :], ((0, 1), (0, 0)))
-    se_img = np.pad(s_img[:, 1:], ((0, 0), (0, 1)))
-    ne_img = np.pad(n_img[:, 1:], ((0, 0), (0, 1)))
-    sw_img = np.pad(s_img[:, :-1], ((0, 0), (1, 0)))
-    nw_img = np.pad(n_img[:, :-1], ((0, 0), (1, 0)))
+    sw_img = np.pad(s_img[:, 1:], ((0, 0), (0, 1)))
+    nw_img = np.pad(n_img[:, 1:], ((0, 0), (0, 1)))
+    se_img = np.pad(s_img[:, :-1], ((0, 0), (1, 0)))
+    ne_img = np.pad(n_img[:, :-1], ((0, 0), (1, 0)))
     return (w_img+e_img+n_img+s_img+sw_img+nw_img+se_img+ne_img+img)>0
 
 def hysteresis_thresholding(img,th_low,th_high,direction):
@@ -132,29 +134,3 @@ def canny(img,th_low,th_high):
     sobel_im,direction = sobel(img)
     canny_img = hysteresis_thresholding(sobel_im, th_low, th_high, direction)
     return canny_img
-
-gaussian_value=[1,2,5]
-thresholds = [[10,25],[30,75]]
-fig = plt.figure(figsize=(13,13))
-for i,sigma in enumerate(gaussian_value):
-    for j,ths in enumerate(thresholds):
-        plt.subplot(321+i*2+j)
-        gau_filter = make_gaussian(sigma)
-        gau = np.uint8(conv(img, gau_filter).squeeze())
-        canny_img = canny(gau,ths[1],ths[0])
-        plt.imshow(canny_img, cmap='gray')
-        plt.ylabel('$\sigma$={}'.format(sigma))
-        plt.xlabel('T_low={} T_high={}'.format(ths[1],ths[0]))
-fig.tight_layout()
-plt.show()
-
-
-cv_gau = cv2.GaussianBlur(img,(7,7),1)
-cv_sobel_y = cv2.Sobel(cv_gau,cv2.CV_64F,0,1)
-cv_sobel_x = cv2.Sobel(cv_gau,cv2.CV_64F,1,0)
-cv_s = np.uint8(np.sqrt((cv_sobel_x**2)+(cv_sobel_y**2)))
-
-cv_canny = cv2.Canny(cv_gau,30,30*2.5)
-plt.imshow(cv_canny,cmap='gray')
-plt.xlabel("canny")
-plt.show()

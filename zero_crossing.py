@@ -96,15 +96,14 @@ def LOG_conv(img,filter,threshold=None):
     log_img=conv(img,filter).squeeze()
     if threshold == None:
         threshold = np.max(log_img)*0.05
-    print(np.min(log_img))
-    w_img = np.pad(log_img[:,1:],((0,0),(0,1)))
-    e_img = np.pad(log_img[:,:-1],((0,0),(1,0)))
+    e_img = np.pad(log_img[:,1:],((0,0),(0,1)))
+    w_img = np.pad(log_img[:,:-1],((0,0),(1,0)))
     n_img = np.pad(log_img[:-1,:],((1,0),(0,0)))
     s_img = np.pad(log_img[1:, :], ((0,1), (0, 0)))
-    sw_img = np.pad(s_img[:,1:],((0,0),(0,1)))
-    nw_img = np.pad(n_img[:, 1:], ((0, 0), (0, 1)))
-    se_img = np.pad(s_img[:,:-1],((0,0),(1,0)))
-    ne_img = np.pad(n_img[:,:-1], ((0, 0), (1, 0)))
+    se_img = np.pad(s_img[:,1:],((0,0),(0,1)))
+    ne_img = np.pad(n_img[:, 1:], ((0, 0), (0, 1)))
+    sw_img = np.pad(s_img[:,:-1],((0,0),(1,0)))
+    nw_img = np.pad(n_img[:,:-1], ((0, 0), (1, 0)))
 
     w_vs_e = np.int8(np.logical_and(np.absolute(w_img-e_img)>=threshold,sign(w_img,e_img)))
     s_vs_n = np.int8(np.logical_and(np.absolute(n_img - s_img) >= threshold,sign(n_img,s_img)))
@@ -115,12 +114,11 @@ def LOG_conv(img,filter,threshold=None):
 
 img = cv2.imread('./data/food.jpg',cv2.IMREAD_GRAYSCALE)
 
-sigma_value = [0.5,1.0,2.0,4.0]
+sigma_value = [1.0,2.0,4.0,8.0]
 fig = plt.figure(figsize=(13,13))
 for i in range(1,5):
     plt.subplot(220+i)
     log_filter = LOG(sigma_value[i-1])
-    print(log_filter.shape)
     log_img = LOG_conv(img,log_filter)
     plt.imshow(log_img,cmap='gray')
     plt.xlabel('$sigma$={}'.format(sigma_value[i-1]))
