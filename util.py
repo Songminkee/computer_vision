@@ -58,7 +58,18 @@ def make_gaussian(sigma):
         size += 1
     aran = np.arange(-1 * (size // 2), size // 2 + 1)
     XX, YY = np.meshgrid(aran, aran)
-    return gaussian2d(XX, YY, sigma)
+    ker = gaussian2d(XX, YY, sigma)
+    ker = ker / np.sum(ker)  # normalization
+    return ker
+
+def get_gaussian_kernel(sigma,size):
+    if size % 2 == 0:
+        size += 1
+    aran = np.arange(-1 * (size // 2), size // 2 + 1)
+    XX, YY = np.meshgrid(aran, aran)
+    ker = gaussian2d(XX, YY, sigma)
+    ker = ker/np.sum(ker) # normalization
+    return ker
 
 def gaussian_blur(img,sigma):
     gau_filter = make_gaussian(sigma)
