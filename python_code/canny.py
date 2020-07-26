@@ -1,7 +1,10 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
-img = cv2.imread('./data/food.jpg',cv2.IMREAD_GRAYSCALE)
+img = cv2.imread('../data/food.jpg',cv2.IMREAD_GRAYSCALE)
 
 
 def im2col(input_data, filter_h, filter_w):

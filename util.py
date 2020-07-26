@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import matplotlib.pyplot as plt
 
 ## convolution
 def im2col(input_data, filter_h, filter_w):
@@ -145,3 +146,85 @@ def canny(img,th_low,th_high):
     sobel_im,direction = sobel(img)
     canny_img = hysteresis_thresholding(sobel_im, th_low, th_high, direction)
     return canny_img
+
+# LOG
+def sign(a,b):
+    sign1 = np.logical_and(a<0,b>0)
+    sign2 = np.logical_and(b<0,a>0)
+    return np.logical_or(sign1,sign2)
+
+def LOG_conv(img,filter,threshold=None):
+    log_img=conv(img,filter).squeeze()
+    if threshold == None:
+        threshold = np.max(log_img)*0.05
+    e_img = np.pad(log_img[:,1:],((0,0),(0,1)))
+    w_img = np.pad(log_img[:,:-1],((0,0),(1,0)))
+    n_img = np.pad(log_img[:-1,:],((1,0),(0,0)))
+    s_img = np.pad(log_img[1:, :], ((0,1), (0, 0)))
+    se_img = np.pad(s_img[:,1:],((0,0),(0,1)))
+    ne_img = np.pad(n_img[:, 1:], ((0, 0), (0, 1)))
+    sw_img = np.pad(s_img[:,:-1],((0,0),(1,0)))
+    nw_img = np.pad(n_img[:,:-1], ((0, 0), (1, 0)))
+
+    w_vs_e = np.int8(np.logical_and(np.absolute(w_img-e_img)>=threshold,sign(w_img,e_img)))
+    s_vs_n = np.int8(np.logical_and(np.absolute(n_img - s_img) >= threshold,sign(n_img,s_img)))
+    sw_vs_ne = np.int8(np.logical_and(np.absolute(sw_img - ne_img) >= threshold,sign(sw_img,ne_img)))
+    nw_vs_se = np.int8(np.logical_and(np.absolute(nw_img - se_img) >= threshold,sign(nw_img,se_img)))
+
+    return np.uint8(w_vs_e+s_vs_n+sw_vs_ne+nw_vs_se>=1)*255
+
+def get_LOG_filter(sigma,plot=False):
+    size = int(sigma * 6)
+    if  size %2 == 0:
+        size+=1
+    aran = np.arange(-1*(size//2),size//2+1)
+    XX, YY = np.meshgrid(aran,aran)
+    xx2 = XX**2
+    yy2 = YY**2
+    sigma2 = sigma**2
+    log = ((xx2+yy2-(2*sigma2))/(sigma2**2)) * gaussian2d(XX,YY,sigma)
+    if plot:
+        fig = plt.figure()
+        ax = fig.gca(projection='3d')
+        ax.plot_wireframe(XX, YY, log)
+        plt.show()
+    return log
+
+def get_LOG_img(img,sigma):
+    log_filter = get_LOG_filter(sigma)
+    log_img = LOG_conv(img, log_filter)
+    return log_img
+
+# harris feature
+def Harris_corner(img,threshold,use_det=True,k=0.04,max_value=255):
+    mask = get_gaussian_kernel(1, 3)
+    img = img/max_value
+    dy = np.pad(img[1:],((0,1),(0,0))) - np.pad(img[:-1],((1,0),(0,0)))
+    dx = np.pad(img[...,1:],((0,0),(0,1))) - np.pad(img[...,:-1],((0,0),(1,0)))
+
+    A_01 = np.expand_dims(conv(dx * dy, mask), -1)
+    A_00 = np.expand_dims(conv(dy * dy, mask), -1)
+    A_11 = np.expand_dims(conv(dx * dx, mask), -1)
+    A = np.concatenate([np.concatenate([A_00, A_01], -1), np.concatenate([A_01, A_11], -1)], 2)
+
+    if use_det:
+        deter = np.linalg.det(A)
+        trace = np.trace(np.transpose(A, (2, 3, 0, 1)))
+        C = deter - (k* (trace ** 2))
+    else:
+        eigens = np.linalg.eigvals(A)
+        C = eigens[..., 0] * eigens[..., 1] - (k * ((eigens[..., 0] + eigens[..., 1]) ** 2))
+
+    return np.where(C>threshold,C,0)
+
+# draw feature
+def draw_featrue_point(img,C,print_harris_value=False):
+    ys, xs = np.where(C > 0)
+
+    gray = np.expand_dims(img, -1)
+    feature_point_img = np.concatenate([gray, gray, gray], -1)
+    for i in range(len(ys)):
+        feature_point_img = cv2.circle(feature_point_img, (xs[i], ys[i]), 10, (0, 0, 255),-1) # (x,y)로 들어감
+        if print_harris_value:
+            print("y = {}, x = {}, C = {}".format(ys[i],xs[i],C[ys[i],xs[i]]))
+    return feature_point_img

@@ -1,3 +1,6 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 import matplotlib.pyplot as plt
 from util import *
 import numpy as np
@@ -45,7 +48,7 @@ print("point c\n",C[2,8])
 
 
 # harris with red_deer image
-img = cv2.imread('./data/red_deer.jpg',cv2.IMREAD_GRAYSCALE)
+img = cv2.imread('../data/red_deer.jpg',cv2.IMREAD_GRAYSCALE)
 plt.figure(figsize=(14,14))
 plt.imshow(img,cmap='gray')
 plt.show()
@@ -86,6 +89,7 @@ def draw_harris_circle(img,harris,print_harris_value=False):
 
 start=time.time()
 harris = Harris_corner(img,0.02,False)
+print(harris)
 plt.figure(figsize=(14,14))
 plt.imshow(draw_harris_circle(img,harris))
 plt.show()

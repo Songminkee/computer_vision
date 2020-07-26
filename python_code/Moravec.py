@@ -1,8 +1,11 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 
-img =cv2.imread('./data/home.jpg',cv2.IMREAD_GRAYSCALE)
+img =cv2.imread('../data/home.jpg',cv2.IMREAD_GRAYSCALE)
 
 plt.imshow(img,cmap='gray')
 plt.show()

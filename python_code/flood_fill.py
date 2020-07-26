@@ -1,9 +1,12 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 import queue
 
-img = cv2.imread('./data/lena.jpg',cv2.IMREAD_GRAYSCALE)
+img = cv2.imread('../data/lena.jpg',cv2.IMREAD_GRAYSCALE)
 ret,thr = cv2.threshold(img,200,255,cv2.THRESH_BINARY_INV)
 
 flood = thr.copy()/255.

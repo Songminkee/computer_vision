@@ -1,8 +1,11 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 
-img =cv2.cvtColor(cv2.imread('./data/food.jpg'),cv2.COLOR_BGR2GRAY)
+img =cv2.cvtColor(cv2.imread('../data/food.jpg'),cv2.COLOR_BGR2GRAY)
 
 
 def im2col(input_data, filter_h, filter_w):

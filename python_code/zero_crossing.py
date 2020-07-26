@@ -1,3 +1,6 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
@@ -67,7 +70,6 @@ def im2col(input_data, filter_h, filter_w):
             col[:, y, x, :, :] = img[:, y:y_max:1, x:x_max:1]
 
     col = np.transpose(col,(0,3,4,1,2)).reshape(C*H*W, -1)
-
     return col
 
 def conv(img,filter):
@@ -112,7 +114,7 @@ def LOG_conv(img,filter,threshold=None):
 
     return np.uint8(w_vs_e+s_vs_n+sw_vs_ne+nw_vs_se>=1)*255
 
-img = cv2.imread('./data/food.jpg',cv2.IMREAD_GRAYSCALE)
+img = cv2.imread('../data/food.jpg',cv2.IMREAD_GRAYSCALE)
 
 sigma_value = [1.0,2.0,4.0,8.0]
 fig = plt.figure(figsize=(13,13))

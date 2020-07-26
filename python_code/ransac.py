@@ -1,8 +1,11 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from util import *
-img = cv2.imread('./data/pic6.png',cv2.IMREAD_GRAYSCALE)
+img = cv2.imread('../data/pic6.png',cv2.IMREAD_GRAYSCALE)
 
 canny_img = canny(img,30,70)
 
