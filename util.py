@@ -196,7 +196,7 @@ def get_LOG_img(img,sigma):
     return log_img
 
 # harris feature
-def Harris_corner(img,threshold,use_det=True,k=0.04,max_value=255):
+def Harris_corner(img,threshold=0.02,use_det=True,k=0.04,max_value=255):
     mask = get_gaussian_kernel(1, 3)
     img = img/max_value
     dy = np.pad(img[1:],((0,1),(0,0))) - np.pad(img[:-1],((1,0),(0,0)))
@@ -218,13 +218,13 @@ def Harris_corner(img,threshold,use_det=True,k=0.04,max_value=255):
     return np.where(C>threshold,C,0)
 
 # draw feature
-def draw_featrue_point(img,C,print_harris_value=False):
+def draw_featrue_point(img,C,print_harris_value=False,dot_size=10):
     ys, xs = np.where(C > 0)
 
     gray = np.expand_dims(img, -1)
     feature_point_img = np.concatenate([gray, gray, gray], -1)
     for i in range(len(ys)):
-        feature_point_img = cv2.circle(feature_point_img, (xs[i], ys[i]), 10, (0, 0, 255),-1) # (x,y)로 들어감
+        feature_point_img = cv2.circle(feature_point_img, (xs[i], ys[i]),dot_size, (0, 0, 255),-1) # (x,y)로 들어감
         if print_harris_value:
             print("y = {}, x = {}, C = {}".format(ys[i],xs[i],C[ys[i],xs[i]]))
     return feature_point_img
